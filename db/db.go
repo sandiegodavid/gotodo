@@ -35,9 +35,6 @@ func Init() {
 	db = session.DB("gotodo")
 	todos = db.C("todos")
 	initTaskIdCounter()
-	// todo := TodoJson{23, "go get it", "a 3 hours", false}
-	// Add(&todo)
-	// find(23)
 }
 
 func Add(t *TodoJson) {
@@ -80,14 +77,16 @@ func getNextTaskId() int64 {
 func Find(id int64) *TodoJson {
 	todo := TodoJson{}
 	err = todos.Find(bson.M{"id": id}).One(&todo)
-	log.Println(todo)
 	return &todo
 }
 
-func List(todolist []TodoJson) {
+func List(todolist *[]TodoJson) {
+	err = todos.Find(bson.M{}).All(todolist)
 }
 
 func Delete(id int64) {
+	log.Println(id)
+	err = todos.Remove(bson.M{"id": id})
 }
 
 func Close() {
