@@ -6,16 +6,16 @@ Welcome to GoTodo.
 3. checkout src repository: `cd $GOPATH/src;git clone https://github.com/sandiegodavid/gotodo.git;cd gotodo`
 4. start server: `go install;$GOPATH/bin/gotodo 8080`
 
-Afterwards, you can sending REST commands(e.g. curl, Postman, Advanced Rest Client)
-e.g.
+Afterwards, you can sending REST commands(e.g. curl, Postman, Advanced Rest Client) e.g.
 
- ## `curl http://localhost:8080/task/add -X POST -H "ContentType: application/json" -d '{"desc":"huge task", "due": "yesterday}'`
- ## `curl http://localhost:8080/task/1`
- ## `curl http://localhost:8080/task/list`
- ## `curl http://localhost:8080/task/1 -X PUT -H "ContentType: application/json" -d '{"desc":"big task", "due": "today"}'`
- ## `curl http://localhost:8080/task/delete/1 -X DELETE`
+* `curl http://localhost:8080/task/add -X POST -H "ContentType: application/json" -d '{"desc":"huge task", "due": "yesterday}'`
+* `curl http://localhost:8080/task/1`
+* `curl http://localhost:8080/task/list`
+* `curl http://localhost:8080/task/1 -X PUT -H "ContentType: application/json" -d '{"desc":"big task", "due": "today"}'`
+* `curl http://localhost:8080/task/delete/1 -X DELETE`
 
 # Status
-All normal commands work
-Test missing
-Edge case crash
+
+* All normal commands work
+* Test missing
+* Edge case crash
