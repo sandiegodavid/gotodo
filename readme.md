@@ -19,4 +19,5 @@ Afterwards, you can sending REST commands(e.g. curl, Postman, Advanced Rest Clie
 
 * All normal commands work
 * Test missing
-* Edge case crash
+* Edge cases need better logging/response
+* response header needs enhancement
