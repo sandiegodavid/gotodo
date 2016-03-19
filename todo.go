@@ -3,36 +3,25 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"gotodo/db"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 )
 
 func main() {
 	db.Init()
-	http.HandleFunc("/task/", taskHandler)
+	r := mux.NewRouter()
+	r.HandleFunc("/{id:[0-9]+}", getOneHandler).Methods("GET")
+	r.HandleFunc("/list", getListHandler).Methods("GET")
+	r.HandleFunc("/task/delete/{id:[0-9]+}", deleteHandler).Methods("DELETE")
+	r.HandleFunc("/task/{id:[0-9]+}", putHandler).Methods("PUT")
+	r.HandleFunc("/task/add", postHandler).Methods("POST")
+	http.Handle("/task", r)
 	http.ListenAndServe(":"+os.Args[1], nil)
 	db.Close()
-}
-
-func taskHandler(w http.ResponseWriter, r *http.Request) {
-	urlEdge := r.URL.Path[len("/task/"):]
-	log.Println("r.URL.Path: " + r.URL.Path + ", urlEdge: " + urlEdge + "\n")
-	switch r.Method {
-	case "GET":
-		handleGet(w, urlEdge)
-	case "POST":
-		handlePost(w, getToDo(r))
-	case "PUT":
-		handlePut(w, urlEdge, getToDo(r))
-	case "DELETE":
-		handleDelete(w, urlEdge[len("delete/"):])
-	default:
-		// Give an error message.
-	}
 }
 
 func getToDo(r *http.Request) *db.TodoJson {
@@ -46,45 +35,47 @@ func getToDo(r *http.Request) *db.TodoJson {
 	return &t
 }
 
-func handlePost(w http.ResponseWriter, t *db.TodoJson) {
+func postHandler(w http.ResponseWriter, r *http.Request) {
+	t := getToDo(r)
 	db.Add(t)
 	fmt.Fprintf(w, strconv.FormatUint(uint64(t.Id), 10))
 }
 
-func handleGet(w http.ResponseWriter, urlEdge string) {
-	if strings.Compare(urlEdge, "list") == 0 {
-		var todolist []db.TodoJson
-		db.List(&todolist)
-		respSeg, err := json.Marshal(todolist)
-		if err != nil {
-			panic("bad json in get list")
-		}
-		fmt.Fprintf(w, string(respSeg))
-		return
-	}
-	i, err := strconv.ParseInt(urlEdge, 10, 64)
+func getOneHandler(w http.ResponseWriter, r *http.Request) {
+	i, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
-		panic("bad taskid in get")
+		panic("bad taskid in getOneHandler: " + mux.Vars(r)["id"])
 	}
 	todo := db.Find(i)
 	respSeg, err := json.Marshal(todo)
 	fmt.Fprintf(w, string(respSeg))
 }
 
-func handlePut(w http.ResponseWriter, urlEdge string, t *db.TodoJson) {
-	i, err := strconv.ParseInt(urlEdge, 10, 64)
+func getListHandler(w http.ResponseWriter, r *http.Request) {
+	var todolist []db.TodoJson
+	db.List(&todolist)
+	respSeg, err := json.Marshal(todolist)
 	if err != nil {
-		panic("bad urlEdge in update: " + urlEdge)
+		panic("bad json in get list")
+	}
+	fmt.Fprintf(w, string(respSeg))
+}
+
+func putHandler(w http.ResponseWriter, r *http.Request) {
+	t := getToDo(r)
+	i, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
+	if err != nil {
+		panic("bad taskid in putHandler: " + mux.Vars(r)["id"])
 	}
 	t.Id = i
 	db.Update(t)
 	fmt.Fprintf(w, strconv.FormatUint(uint64(t.Id), 10))
 }
 
-func handleDelete(w http.ResponseWriter, urlEdge string) {
-	i, err := strconv.ParseInt(urlEdge, 10, 64)
+func deleteHandler(w http.ResponseWriter, r *http.Request) {
+	i, err := strconv.ParseInt(mux.Vars(r)["id"], 10, 64)
 	if err != nil {
-		panic("bad urlEdge in delete: " + urlEdge)
+		panic("bad taskid in deleteHandler: " + mux.Vars(r)["id"])
 	}
 	db.Delete(i)
 	fmt.Fprintf(w, "ok")
