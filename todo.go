@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"gotodo/data"
 	"gotodo/db"
 	"log"
 	"net/http"
@@ -24,9 +25,9 @@ func main() {
 	db.Close()
 }
 
-func getToDo(r *http.Request) *db.TodoJson {
+func getToDo(r *http.Request) *data.TodoJSON {
 	decoder := json.NewDecoder(r.Body)
-	var t db.TodoJson
+	var t data.TodoJSON
 	err := decoder.Decode(&t)
 	if err != nil {
 		panic("bad json in create")
@@ -38,7 +39,7 @@ func getToDo(r *http.Request) *db.TodoJson {
 func postHandler(w http.ResponseWriter, r *http.Request) {
 	t := getToDo(r)
 	db.Add(t)
-	fmt.Fprintf(w, strconv.FormatUint(uint64(t.Id), 10))
+	fmt.Fprintf(w, strconv.FormatUint(uint64(t.ID), 10))
 }
 
 func getOneHandler(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +53,7 @@ func getOneHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getListHandler(w http.ResponseWriter, r *http.Request) {
-	var todolist []db.TodoJson
+	var todolist []data.TodoJSON
 	db.List(&todolist)
 	respSeg, err := json.Marshal(todolist)
 	if err != nil {
@@ -67,9 +68,9 @@ func putHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic("bad taskid in putHandler: " + mux.Vars(r)["id"])
 	}
-	t.Id = i
+	t.ID = i
 	db.Update(t)
-	fmt.Fprintf(w, strconv.FormatUint(uint64(t.Id), 10))
+	fmt.Fprintf(w, strconv.FormatUint(uint64(t.ID), 10))
 }
 
 func deleteHandler(w http.ResponseWriter, r *http.Request) {

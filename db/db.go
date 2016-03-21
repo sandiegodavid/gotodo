@@ -3,6 +3,7 @@ package db
 import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"gotodo/data"
 	"log"
 )
 
@@ -13,18 +14,9 @@ var counters *mgo.Collection
 var err error
 var _taskid = "taskid"
 
-type TodoJson struct {
-	Id        int64  `json:"id"`
-	Desc      string `json:"desc"`
-	Due       string `json:"due"`
-	Completed bool   `json:"completed"`
-}
-
-type TaskIdDoc struct {
-	Name string `json:"name"`
-	Seq  int64  `json:"seq"`
-}
-
+/*
+Init init function
+*/
 func Init() {
 	lsession, err := mgo.Dial("localhost")
 	if err != nil {
@@ -34,25 +26,31 @@ func Init() {
 	session.SetMode(mgo.Monotonic, true)
 	db = session.DB("gotodo")
 	todos = db.C("todos")
-	initTaskIdCounter()
+	initTaskIDCounter()
 }
 
-func Add(t *TodoJson) {
-	t.Id = getNextTaskId()
+/*
+Add add function
+*/
+func Add(t *data.TodoJSON) {
+	t.ID = getNextTaskID()
 	err = todos.Insert(t)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func Update(t *TodoJson) {
+/*
+Update update function
+*/
+func Update(t *data.TodoJSON) {
 	err = todos.Update(bson.M{}, t)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func initTaskIdCounter() {
+func initTaskIDCounter() {
 	counters = db.C("counters")
 	idDocCount, err := counters.Find(bson.M{"name": _taskid}).Count()
 	if err == nil && idDocCount == 0 {
@@ -60,12 +58,12 @@ func initTaskIdCounter() {
 	}
 }
 
-func getNextTaskId() int64 {
+func getNextTaskID() int64 {
 	change := mgo.Change{
 		Update:    bson.M{"$inc": bson.M{"seq": 1}},
 		ReturnNew: true,
 	}
-	idDoc := TaskIdDoc{}
+	idDoc := data.TaskIDDoc{}
 	info, err := counters.Find(bson.M{"name": _taskid}).Apply(change, &idDoc)
 	if err != nil {
 		log.Println(info)
@@ -74,21 +72,33 @@ func getNextTaskId() int64 {
 	return idDoc.Seq
 }
 
-func Find(id int64) *TodoJson {
-	todo := TodoJson{}
+/*
+Find find function
+*/
+func Find(id int64) *data.TodoJSON {
+	todo := data.TodoJSON{}
 	err = todos.Find(bson.M{"id": id}).One(&todo)
 	return &todo
 }
 
-func List(todolist *[]TodoJson) {
+/*
+List list function
+*/
+func List(todolist *[]data.TodoJSON) {
 	err = todos.Find(bson.M{}).All(todolist)
 }
 
+/*
+Delete delete function
+*/
 func Delete(id int64) {
 	log.Println(id)
 	err = todos.Remove(bson.M{"id": id})
 }
 
+/*
+Close close function
+*/
 func Close() {
 	session.Close()
 }
