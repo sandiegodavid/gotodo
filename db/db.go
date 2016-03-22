@@ -3,7 +3,7 @@ package db
 import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"gotodo/data"
+	"gotodo/model"
 	"log"
 )
 
@@ -32,7 +32,7 @@ func Init() {
 /*
 Add add function
 */
-func Add(t *data.TodoJSON) {
+func Add(t *model.TodoJSON) {
 	t.ID = getNextTaskID()
 	err = todos.Insert(t)
 	if err != nil {
@@ -43,7 +43,7 @@ func Add(t *data.TodoJSON) {
 /*
 Update update function
 */
-func Update(t *data.TodoJSON) {
+func Update(t *model.TodoJSON) {
 	err = todos.Update(bson.M{}, t)
 	if err != nil {
 		panic(err)
@@ -63,7 +63,7 @@ func getNextTaskID() int64 {
 		Update:    bson.M{"$inc": bson.M{"seq": 1}},
 		ReturnNew: true,
 	}
-	idDoc := data.TaskIDDoc{}
+	idDoc := model.TaskIDDoc{}
 	info, err := counters.Find(bson.M{"name": _taskid}).Apply(change, &idDoc)
 	if err != nil {
 		log.Println(info)
@@ -75,8 +75,8 @@ func getNextTaskID() int64 {
 /*
 Find find function
 */
-func Find(id int64) *data.TodoJSON {
-	todo := data.TodoJSON{}
+func Find(id int64) *model.TodoJSON {
+	todo := model.TodoJSON{}
 	err = todos.Find(bson.M{"id": id}).One(&todo)
 	return &todo
 }
@@ -84,7 +84,7 @@ func Find(id int64) *data.TodoJSON {
 /*
 List list function
 */
-func List(todolist *[]data.TodoJSON) {
+func List(todolist *[]model.TodoJSON) {
 	err = todos.Find(bson.M{}).All(todolist)
 }
 

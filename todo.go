@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"gotodo/data"
 	"gotodo/db"
+	"gotodo/model"
 	"log"
 	"net/http"
 	"os"
@@ -25,9 +25,9 @@ func main() {
 	db.Close()
 }
 
-func getToDo(r *http.Request) *data.TodoJSON {
+func getToDo(r *http.Request) *model.TodoJSON {
 	decoder := json.NewDecoder(r.Body)
-	var t data.TodoJSON
+	var t model.TodoJSON
 	err := decoder.Decode(&t)
 	if err != nil {
 		panic("bad json in create")
@@ -53,7 +53,7 @@ func getOneHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getListHandler(w http.ResponseWriter, r *http.Request) {
-	var todolist []data.TodoJSON
+	var todolist []model.TodoJSON
 	db.List(&todolist)
 	respSeg, err := json.Marshal(todolist)
 	if err != nil {

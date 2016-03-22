@@ -1,4 +1,4 @@
-package data
+package model
 
 /*
 TodoJSON JSON for todo items
